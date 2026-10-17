@@ -1,0 +1,14 @@
+# macOS
+.DS_Store
+
+# R
+.Rhistory
+.RData
+
+# GAMS generated files
+*.lst
+*.log
+*.lxi
+*.gdx
+225*/
+gamslice.txt
