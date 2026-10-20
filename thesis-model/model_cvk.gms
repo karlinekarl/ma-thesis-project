@@ -16,7 +16,9 @@ Scalars t0 'initial year' /2025/,
         b_emi 'marginal abatement cost at full abatement (MIU = 1)in $/tCO2' /500/,
         carbon_budget 'carbon budget in GtCO2' /1000/,
         ineq_aversion 'inequality aversion' /1.45/,     #curvature of welfare function
-        time_pref 'pure rate of social time preference' /0.015/;        #welfare weight on future gen vs current gen
+        time_pref 'pure rate of social time preference' /0.015/,        #welfare weight on future gen vs current gen
+        gdp_growth 'annual growth rate of baseline income' /0.02/,      #exogenous, same for all deciles
+        gdp0 'baseline GDP in initial year in bln$' /1e5/;              # 100 trillion $
 
 Parameters
         year(t) 'calendar year',
@@ -32,9 +34,9 @@ year(t) = t0 + t.val;  #year 2026-2125
 sigma(t) = 4 * 1e-4;
 ets(t) = 1e5;
 
-y0(t,'d1') = 0.05 * 100 * 1e3; #5% of 100 trillion $ GDP (100 bln * 1e3 = 100 trillion $)
-y0(t,'d2') = 0.35 * 100 * 1e3; #35%
-y0(t,'d3') = 0.60 * 100 * 1e3; #60%
+y0(t,'d1') = 0.05 * gdp0 * (1 + gdp_growth)**(t.val - 1); #5% of baseline GDP, growing at gdp_growth per year (t=1 is the initial level)
+y0(t,'d2') = 0.35 * gdp0 * (1 + gdp_growth)**(t.val - 1); #35%
+y0(t,'d3') = 0.60 * gdp0 * (1 + gdp_growth)**(t.val - 1); #60%
 
 eta("emi") = 0.8;       #regressive distribution of abatement costs (poor bear larger share than income share)
 eta('cdr') = 2;         #distribution of carbon removal (CDR profits go disproportionately to rich)
