@@ -11,8 +11,9 @@ Alias   (d,dd);
 
 *** PARAMETERS
 Scalars t0 'initial year' /2025/,
-        a_cdr 'baseline cost of CDR in $/tCO2' /100/,
-        b_cdr 'marginal removal cost in $/tCO2' /100/,
+        a_cdr0 'baseline cost of CDR in $/tCO2 in initial year' /100/,
+        b_cdr0 'marginal removal cost in $/tCO2 in initial year' /100/,
+        g_cdr 'annual rate of CDR cost reduction' /0.02/,
         b_emi 'marginal abatement cost at full abatement (MIU = 1)in $/tCO2' /500/,
         carbon_budget 'carbon budget in GtCO2' /1000/,
         ineq_aversion 'inequality aversion' /1.45/,     #curvature of welfare function
@@ -20,6 +21,8 @@ Scalars t0 'initial year' /2025/,
 
 Parameters
         year(t) 'calendar year',
+        a_cdr(t) 'baseline cost of CDR in $/tCO2',
+        b_cdr(t) 'marginal removal cost in $/tCO2',
         sigma(t) 'carbon intensity of economy in tCO2/$',       #for every dollar of GDP, sigma tCO2 are emitted
         y0(t,d) 'initial income of decile d in year t in billion $',
         eta(f) 'distribution elasticity of flow f',  #how unequally flows are distributed across deciles
@@ -29,6 +32,8 @@ Parameters
 
 ** define parameters
 year(t) = t0 + t.val;  #year 2026-2125
+a_cdr(t) = a_cdr0 * (1 - g_cdr)**(year(t) - t0);  #CDR costs fall by g_cdr per year
+b_cdr(t) = b_cdr0 * (1 - g_cdr)**(year(t) - t0);
 sigma(t) = 4 * 1e-4;
 ets(t) = 1e5;
 
@@ -113,10 +118,10 @@ eq_cap_and_trade(t)..   E(t) =L= ets(t);
 
 ** cost equations
 eq_emi_cost(t)..        COST_EMI(t) =E= sigma(t) * GDP(t) * (b_emi * power(MIU(t), 3)) / 3;     #integral of MC_EMI over abated tons (sigma(t) * GDP(t) * MIU(t))
-eq_cdr_cost(t)..        COST_CDR(t) =E= a_cdr * E_CDR(t) + (b_cdr * power(E_CDR(t), 3)) / 3;
+eq_cdr_cost(t)..        COST_CDR(t) =E= a_cdr(t) * E_CDR(t) + (b_cdr(t) * power(E_CDR(t), 3)) / 3;
 
 eq_emi_marg_cost(t)..   MC_EMI(t) =E= b_emi * power(MIU(t), 2);
-eq_cdr_marg_cost(t)..   MC_CDR(t) =E= a_cdr + b_cdr * power(E_CDR(t), 2);
+eq_cdr_marg_cost(t)..   MC_CDR(t) =E= a_cdr(t) + b_cdr(t) * power(E_CDR(t), 2);
 
 eq_price_emi(t)..       P_EMI(t) =E= MC_EMI(t);   
 eq_price_cdr(t)..       P_CDR(t) =E= MC_CDR(t);
