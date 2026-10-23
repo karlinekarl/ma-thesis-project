@@ -15,7 +15,8 @@ Scalars t0 'initial year' /2025/,
         b_cdr 'marginal removal cost in $/tCO2' /100/,
         b_emi 'marginal abatement cost at full abatement (MIU = 1)in $/tCO2' /500/,
         carbon_budget 'carbon budget in GtCO2' /1000/,
-        ineq_aversion 'inequality aversion' /1.45/,     #curvature of welfare function
+        ineq_aversion 'inequality aversion across deciles within a period' /0.5/,     #curvature of the Atkinson aggregation over deciles (must not equal 1)
+        ies 'elasticity of intertemporal substitution' /1.45/,     #curvature of welfare across time is 1/ies (must not equal 1)
         time_pref 'pure rate of social time preference' /0.015/;        #welfare weight on future gen vs current gen
 
 Parameters
@@ -122,7 +123,13 @@ eq_price_emi(t)..       P_EMI(t) =E= MC_EMI(t);
 eq_price_cdr(t)..       P_CDR(t) =E= MC_CDR(t);
 
 ** objective function
-eq_welfare..            WELFARE =E= sum((t,d), (Y(t,d)**(1-ineq_aversion) / (1-ineq_aversion) - 1) * (1 / ((1 + time_pref)**(year(t) - t0))));
+*  within each period, deciles are aggregated to an equally-distributed-equivalent income (Atkinson, inequality aversion):
+*      Y_EDE(t) = ( sum(d, Y(t,d)**(1-ineq_aversion)) / card(d) )**(1/(1-ineq_aversion))
+*  the EDE incomes are then aggregated over time with CRRA utility (curvature 1/ies) and discounted:
+*      WELFARE = sum(t, Y_EDE(t)**(1-1/ies) / (1-1/ies) / (1+time_pref)**(year(t)-t0))
+eq_welfare..            WELFARE =E= sum(t, (sum(d, Y(t,d)**(1-ineq_aversion)) / card(d))**((1-1/ies) / (1-ineq_aversion))
+                                           / (1-1/ies)
+                                           / ((1 + time_pref)**(year(t) - t0)));
 
 
 *** MODEL
